@@ -1,3 +1,16 @@
+// terraform {
+//   backend "s3" {
+//     bucket = "terraform-remote-state-infosec-vault.s3.amazonaws.com"
+//     encrypt = true
+//     key = "terraform.tfstate"
+//     region = "us-east-1"
+//   }
+// }
+
+provider "aws" {
+  region = "us-east-1"
+}
+
 module "ssh_keypair_aws_override" {
   source = "github.com/hashicorp-modules/ssh-keypair-aws"
 
@@ -90,13 +103,17 @@ module "network_aws" {
   source = "github.com/hashicorp-modules/network-aws"
 
   name              = "${var.name}"
+  create_vpc        = "${var.create_vpc}"
+  vpc_id            = "${var.vpc_id}"
   vpc_cidr          = "${var.vpc_cidr}"
   vpc_cidrs_public  = "${var.vpc_cidrs_public}"
   nat_count         = "${var.nat_count}"
   vpc_cidrs_private = "${var.vpc_cidrs_private}"
+  ami_owner         = "${var.ami_owner}"
   release_version   = "${var.bastion_release}"
   consul_version    = "${var.bastion_consul_version}"
   vault_version     = "${var.bastion_vault_version}"
+  nomad_version     = "${var.bastion_nomad_version}"
   os                = "${var.bastion_os}"
   os_version        = "${var.bastion_os_version}"
   bastion_count     = "${var.bastion_servers}"
@@ -134,6 +151,7 @@ module "consul_aws" {
   vpc_id           = "${module.network_aws.vpc_id}"
   vpc_cidr         = "${module.network_aws.vpc_cidr}"
   subnet_ids       = "${split(",", var.consul_public ? join(",", module.network_aws.subnet_public_ids) : join(",", module.network_aws.subnet_private_ids))}"
+  ami_owner        = "${var.ami_owner}"
   release_version  = "${var.consul_release}"
   consul_version   = "${var.consul_version}"
   os               = "${var.consul_os}"
@@ -179,6 +197,7 @@ module "vault_aws" {
   vpc_id           = "${module.network_aws.vpc_id}"
   vpc_cidr         = "${module.network_aws.vpc_cidr}"
   subnet_ids       = "${split(",", var.vault_public ? join(",", module.network_aws.subnet_public_ids) : join(",", module.network_aws.subnet_private_ids))}"
+  ami_owner        = "${var.ami_owner}"
   release_version  = "${var.vault_release}"
   vault_version    = "${var.vault_version}"
   consul_version   = "${var.consul_version}"
